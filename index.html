@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경품 이벤트</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ===== 기존 디자인 그대로 유지 ===== */
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root{
+--gold:#FFD700;--gold2:#FFA500;--dark:#0a0a0f;--deep:#12121a;
+--card:#1a1a28;--border:#2a2a40;--text:#e8e8f0;--muted:#8888aa;
+--win:#00e676;--lose:#ff4444;--accent:#7c6aff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+background:var(--dark);color:var(--text);
+font-family:'Noto Sans KR',sans-serif;
+min-height:100vh;overflow-x:hidden;
+}
+.check-wrap{
+min-height:100vh;display:flex;flex-direction:column;
+align-items:center;justify-content:center;
+padding:40px 20px;
+}
+.event-title{
+font-family:'Black Han Sans',sans-serif;
+font-size:clamp(28px,7vw,48px);
+background:linear-gradient(135deg,#FFD700,#FFA500,#FFD700);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+margin-bottom:20px;text-align:center;
+}
+.code-card{
+width:100%;max-width:380px;background:var(--card);
+border:1px solid var(--border);
+border-radius:20px;padding:32px 28px;
+}
+.code-inputs{display:flex;gap:10px;justify-content:center;margin-bottom:24px;}
+.digit-box{
+width:62px;height:72px;background:var(--deep);
+border:2px solid var(--border);border-radius:12px;
+font-family:'Black Han Sans';font-size:32px;
+color:var(--gold);text-align:center;
+}
+.check-btn{
+width:100%;padding:15px;
+background:linear-gradient(135deg,#FFD700,#FFA500);
+border:none;border-radius:12px;
+font-family:'Black Han Sans';
+font-size:17px;color:#000;cursor:pointer;
+}
+.result-overlay{
+position:fixed;inset:0;z-index:100;
+background:rgba(0,0,0,.85);
+display:none;align-items:center;justify-content:center;
+}
+.result-overlay.show{display:flex;}
+.result-box{
+width:100%;max-width:360px;border-radius:24px;
+padding:44px 32px;text-align:center;
+}
+.result-box.win{border:2px solid var(--win);}
+.result-box.lose{border:2px solid #333;}
+.result-box.invalid{border:2px solid #444;}
+.result-title{
+font-family:'Black Han Sans';
+font-size:30px;margin-bottom:10px;
+}
+.result-code-display{
+font-family:'Black Han Sans';
+font-size:22px;letter-spacing:.25em;
+color:var(--gold);margin:12px 0 20px;
+}
+.result-close{
+width:100%;padding:13px;
+border:1px solid var(--border);
+background:rgba(255,255,255,.07);
+border-radius:10px;color:var(--text);
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="check-wrap">
+  <h1 class="event-title">경품 추첨 이벤트</h1>
+
+  <div class="code-card">
+    <div class="code-inputs">
+      <input class="digit-box" maxlength="1">
+      <input class="digit-box" maxlength="1">
+      <input class="digit-box" maxlength="1">
+      <input class="digit-box" maxlength="1">
+    </div>
+
+    <button class="check-btn" id="check-btn" disabled onclick="checkCode()">
+      당첨 확인하기
+    </button>
+  </div>
+</div>
+
+<div class="result-overlay" id="result-overlay">
+  <div class="result-box" id="result-box">
+    <div class="result-title" id="result-title"></div>
+    <div class="result-code-display" id="result-code-display"></div>
+    <button class="result-close" onclick="closeResult()">닫기</button>
+  </div>
+</div>
+
+<script>
+/* =========================
+   Supabase 설정 (필수 수정)
+========================= */
+const SUPABASE_URL = 'https://tmuftxqpnohnzjeivcmf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtdWZ0eHFwbm9obnpqZWl2Y21mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3ODg0NzUsImV4cCI6MjA5NTM2NDQ3NX0.XlWQxt9aOq6LWJqVOoHArhWFctm22scJCJfHNH1v_ck';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* =========================
+   입력 처리
+========================= */
+const boxes = document.querySelectorAll('.digit-box');
+const btn = document.getElementById('check-btn');
+
+boxes.forEach((box, idx) => {
+  box.addEventListener('input', (e)=>{
+    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    box.value = val.slice(-1);
+    if(val && idx<3) boxes[idx+1].focus();
+    updateBtn();
+  });
+  box.addEventListener('keydown',(e)=>{
+    if(e.key==="Backspace" && !box.value && idx>0){
+      boxes[idx-1].focus();
+    }
+  });
+});
+
+function updateBtn(){
+  btn.disabled = [...boxes].some(b=>!b.value);
+}
+
+function getCode(){
+  return [...boxes].map(b=>b.value).join('');
+}
+
+/* =========================
+   코드 확인 (RPC use_code)
+========================= */
+async function checkCode(){
+  const code = getCode();
+  if(code.length!==4) return;
+
+  btn.disabled = true;
+
+  const { data, error } = await sb.rpc('use_code', { p_code: code });
+
+  if(error){
+    alert("서버 오류 발생");
+    btn.disabled=false;
+    return;
+  }
+
+  showResult(data.status, code);
+}
+
+/* =========================
+   결과 표시
+========================= */
+function showResult(status, code){
+  const overlay = document.getElementById('result-overlay');
+  const box = document.getElementById('result-box');
+  const title = document.getElementById('result-title');
+  const codeDisp = document.getElementById('result-code-display');
+
+  overlay.classList.add('show');
+  codeDisp.textContent = code;
+
+  if(status==='win'){
+    box.className='result-box win';
+    title.textContent='🎉 당첨!';
+  }else if(status==='lose'){
+    box.className='result-box lose';
+    title.textContent='아쉽게도 꽝입니다';
+  }else if(status==='already_used'){
+    box.className='result-box invalid';
+    title.textContent='이미 사용된 코드';
+  }else{
+    box.className='result-box invalid';
+    title.textContent='유효하지 않은 코드';
+  }
+}
+
+function closeResult(){
+  document.getElementById('result-overlay').classList.remove('show');
+  boxes.forEach(b=>b.value='');
+  btn.disabled=true;
+}
+</script>
+
+</body>
+</html>
