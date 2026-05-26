@@ -2,85 +2,147 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>경품 이벤트</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>골프공을 잡아라 이벤트</title>
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
 :root{
+  --green:#008C45;
+  --green-dark:#005B2D;
+  --green-light:#00B35A;
   --gold:#FFD700;
-  --gold2:#FFA500;
-  --bg:#0f0f14;
-  --card:#1c1c26;
-  --border:#2f2f42;
+  --bg:#03150b;
+  --card:#082314;
+  --border:#0d4b28;
   --text:#ffffff;
-  --muted:#9a9ab0;
-  --win:#00e676;
-  --lose:#ff5252;
+  --muted:#b8d6c2;
+  --win:#00ff88;
+  --lose:#ff5a5a;
 }
 
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body{
-  background:var(--bg);
-  color:var(--text);
   font-family:'Noto Sans KR', sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(0,180,90,.18), transparent 35%),
+    linear-gradient(180deg,#04140b 0%, #021008 100%);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* 모바일 최적화 */
+.wrapper{
+  width:100%;
   min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:20px;
-}
-
-.container{
-  width:100%;
-  max-width:420px;
+  padding:24px 18px;
 }
 
 .card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:24px;
-  padding:40px 30px;
-  text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  width:100%;
+  max-width:420px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.04),
+      rgba(255,255,255,.02)
+    );
+  border:1px solid rgba(0,255,120,.15);
+  border-radius:32px;
+  padding:34px 24px 30px;
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.45),
+    0 0 0 1px rgba(255,255,255,.03),
+    0 0 40px rgba(0,255,120,.08);
+  position:relative;
+  overflow:hidden;
+}
+
+/* 장식 */
+.card::before{
+  content:'';
+  position:absolute;
+  top:-120px;
+  right:-100px;
+  width:240px;
+  height:240px;
+  background:radial-gradient(circle, rgba(0,255,120,.15), transparent 70%);
+}
+
+.card::after{
+  content:'';
+  position:absolute;
+  bottom:-120px;
+  left:-120px;
+  width:240px;
+  height:240px;
+  background:radial-gradient(circle, rgba(255,215,0,.08), transparent 70%);
 }
 
 .badge{
-  display:inline-block;
-  padding:6px 14px;
-  border-radius:30px;
-  background:rgba(255,215,0,.08);
-  border:1px solid rgba(255,215,0,.2);
-  color:var(--gold);
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 16px;
+  border-radius:999px;
+  background:rgba(0,255,120,.08);
+  border:1px solid rgba(0,255,120,.2);
+  color:#7CFFB2;
   font-size:12px;
-  margin-bottom:18px;
+  font-weight:700;
+  margin-bottom:22px;
+}
+
+.heineken{
+  font-size:13px;
+  color:#9cffc5;
+  margin-bottom:12px;
+  font-weight:700;
+  letter-spacing:.08em;
 }
 
 .title{
   font-family:'Black Han Sans', sans-serif;
   font-size:42px;
-  line-height:1.2;
-  margin-bottom:10px;
-  background:linear-gradient(135deg,#FFD700,#FFA500);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  line-height:1.15;
+  margin-bottom:14px;
+  color:white;
+  text-shadow:
+    0 0 18px rgba(0,255,120,.28);
+}
+
+.title .green{
+  color:#00ff88;
 }
 
 .sub{
+  font-size:15px;
   color:var(--muted);
-  font-size:14px;
-  margin-bottom:35px;
+  line-height:1.6;
+  margin-bottom:34px;
 }
 
+/* 입력칸 */
 .inputs{
   display:flex;
   justify-content:center;
@@ -89,52 +151,66 @@ body{
 }
 
 .digit{
-  width:64px;
-  height:74px;
-  border-radius:14px;
-  border:2px solid var(--border);
-  background:#111118;
-  color:var(--gold);
+  width:68px;
+  height:78px;
+  border-radius:18px;
+  border:2px solid rgba(0,255,120,.14);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.04),
+      rgba(255,255,255,.02)
+    );
+  color:white;
   text-align:center;
   font-size:34px;
   font-family:'Black Han Sans', sans-serif;
   outline:none;
   transition:.2s;
+  box-shadow: inset 0 0 12px rgba(0,0,0,.2);
 }
 
 .digit:focus{
-  border-color:var(--gold);
-  box-shadow:0 0 0 4px rgba(255,215,0,.12);
+  border-color:#00ff88;
+  box-shadow:
+    0 0 0 5px rgba(0,255,120,.14),
+    0 0 22px rgba(0,255,120,.25);
 }
 
-button{
+.button{
   width:100%;
-  height:54px;
+  height:58px;
   border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,#FFD700,#FFA500);
-  color:#000;
+  border-radius:18px;
+  background:
+    linear-gradient(
+      135deg,
+      #00ff88,
+      #00a64f
+    );
+  color:#001b0e;
   font-family:'Black Han Sans', sans-serif;
-  font-size:18px;
+  font-size:20px;
   cursor:pointer;
   transition:.2s;
+  box-shadow:
+    0 12px 30px rgba(0,255,120,.22);
 }
 
-button:hover{
-  transform:translateY(-2px);
+.button:active{
+  transform:scale(.98);
 }
 
-button:disabled{
+.button:disabled{
   opacity:.5;
-  cursor:not-allowed;
-  transform:none;
 }
 
 .result{
   margin-top:28px;
-  font-size:22px;
-  font-weight:700;
-  min-height:30px;
+  text-align:center;
+  font-size:24px;
+  font-weight:900;
+  min-height:34px;
 }
 
 .win{
@@ -145,79 +221,110 @@ button:disabled{
   color:var(--lose);
 }
 
-.info{
-  margin-top:16px;
-  font-size:13px;
-  color:var(--muted);
-}
-
 .loading{
-  color:var(--gold);
+  color:#9cffc5;
 }
 
+.bottom{
+  margin-top:20px;
+  text-align:center;
+  color:#7ea68d;
+  font-size:12px;
+  line-height:1.5;
+}
+
+/* 모바일 */
 @media(max-width:480px){
 
-  .card{
-    padding:32px 22px;
+  .wrapper{
+    padding:16px;
   }
 
-  .digit{
-    width:58px;
-    height:68px;
-    font-size:30px;
+  .card{
+    padding:30px 20px 26px;
+    border-radius:28px;
   }
 
   .title{
-    font-size:34px;
+    font-size:36px;
   }
+
+  .digit{
+    width:62px;
+    height:72px;
+    font-size:30px;
+  }
+
+  .button{
+    height:56px;
+    font-size:19px;
+  }
+
 }
+
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrapper">
+
   <div class="card">
 
-    <div class="badge">🎁 Lucky Draw Event</div>
+    <div class="badge">
+      🍺 HEINEKEN EVENT
+    </div>
 
-    <div class="title">경품 이벤트</div>
+    <div class="heineken">
+      HEINEKEN GOLF EVENT
+    </div>
+
+    <div class="title">
+      <span class="green">골프공을</span><br>
+      잡아라 이벤트
+    </div>
 
     <div class="sub">
       4자리 코드를 입력하고<br>
-      당첨 여부를 확인하세요
+      즉시 당첨 여부를 확인하세요
     </div>
 
     <div class="inputs">
-      <input maxlength="1" class="digit" />
-      <input maxlength="1" class="digit" />
-      <input maxlength="1" class="digit" />
-      <input maxlength="1" class="digit" />
+      <input maxlength="1" class="digit">
+      <input maxlength="1" class="digit">
+      <input maxlength="1" class="digit">
+      <input maxlength="1" class="digit">
     </div>
 
-    <button id="checkBtn" onclick="checkCode()">
+    <button
+      class="button"
+      id="checkBtn"
+      onclick="checkCode()"
+    >
       당첨 확인하기
     </button>
 
     <div class="result" id="result"></div>
 
-    <div class="info">
-      이미 사용된 코드는 재사용할 수 없습니다
+    <div class="bottom">
+      이미 사용된 코드는<br>
+      재사용할 수 없습니다
     </div>
 
   </div>
+
 </div>
 
 <script>
 
 /* =========================================
-   ✅ Supabase 설정
+   Supabase
 ========================================= */
 
 const SUPABASE_URL =
 "https://tmuftxqpnohnzjeivcmf.supabase.co";
 
 const SUPABASE_ANON_KEY =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtdWZ0eHFwbm9obnpqZWl2Y21mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3ODg0NzUsImV4cCI6MjA5NTM2NDQ3NX0.XlWQxt9aOq6LWJqVOoHArhWFctm22scJCJfHNH1v_ck";
+"YOUR_ANON_KEY";
 
 const supabaseClient =
 supabase.createClient(
@@ -226,7 +333,7 @@ supabase.createClient(
 );
 
 /* =========================================
-   ✅ 입력칸 자동 이동
+   입력 자동 이동
 ========================================= */
 
 const inputs =
@@ -250,14 +357,14 @@ inputs.forEach((input,index)=>{
   input.addEventListener("keydown",(e)=>{
 
     if(
-      e.key === "Backspace" &&
+      e.key==="Backspace" &&
       !input.value &&
-      index > 0
+      index>0
     ){
       inputs[index-1].focus();
     }
 
-    if(e.key === "Enter"){
+    if(e.key==="Enter"){
       checkCode();
     }
 
@@ -266,7 +373,7 @@ inputs.forEach((input,index)=>{
 });
 
 /* =========================================
-   ✅ 코드 검사
+   코드 확인
 ========================================= */
 
 async function checkCode(){
@@ -284,7 +391,9 @@ async function checkCode(){
 
   if(code.length !== 4){
 
-    result.className = "result lose";
+    result.className =
+      "result lose";
+
     result.innerText =
       "⚠ 4자리 코드를 입력하세요";
 
@@ -293,8 +402,11 @@ async function checkCode(){
 
   btn.disabled = true;
 
-  result.className = "result loading";
-  result.innerText = "확인 중...";
+  result.className =
+    "result loading";
+
+  result.innerText =
+    "확인 중...";
 
   try{
 
@@ -324,10 +436,6 @@ async function checkCode(){
       return;
     }
 
-    /* =========================
-       당첨
-    ========================= */
-
     if(data.status === "win"){
 
       result.className =
@@ -338,10 +446,6 @@ async function checkCode(){
 
     }
 
-    /* =========================
-       꽝
-    ========================= */
-
     else if(data.status === "lose"){
 
       result.className =
@@ -351,10 +455,6 @@ async function checkCode(){
         "😢 꽝입니다";
 
     }
-
-    /* =========================
-       이미 사용됨
-    ========================= */
 
     else if(
       data.status === "already_used"
@@ -369,10 +469,6 @@ async function checkCode(){
       btn.disabled = false;
 
     }
-
-    /* =========================
-       유효하지 않음
-    ========================= */
 
     else{
 
@@ -405,8 +501,7 @@ async function checkCode(){
 }
 
 /* =========================================
-   ✅ URL 파라미터 자동 입력
-   ?code=A1B2
+   URL 자동 입력
 ========================================= */
 
 const params =
